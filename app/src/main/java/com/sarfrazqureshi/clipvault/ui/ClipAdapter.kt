@@ -11,7 +11,8 @@ import java.util.Locale
 
 class ClipAdapter(
     private var items: List<ClipItem> = emptyList(),
-    private val onClick: (ClipItem) -> Unit
+    private val onClick: (ClipItem) -> Unit,
+    private val onLongClick: (ClipItem) -> Unit
 ) : RecyclerView.Adapter<ClipAdapter.ClipViewHolder>() {
 
     private val dateFormat = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault())
@@ -33,6 +34,10 @@ class ClipAdapter(
         holder.binding.textContent.text = item.content
         holder.binding.textTimestamp.text = dateFormat.format(Date(item.timestamp))
         holder.itemView.setOnClickListener { onClick(item) }
+        holder.itemView.setOnLongClickListener {
+            onLongClick(item)
+            true
+        }
     }
 
     override fun getItemCount(): Int = items.size
