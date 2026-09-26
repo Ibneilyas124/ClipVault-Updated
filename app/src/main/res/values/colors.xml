@@ -1,0 +1,12 @@
+<resources>
+    <color name="background">#121212</color>
+    <color name="surface">#1E1E1E</color>
+    <color name="surface_alt">#2A2A2A</color>
+    <color name="primary">#4FC3F7</color>
+    <color name="primary_variant">#0288D1</color>
+    <color name="accent">#FF8A65</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B0B0B0</color>
+    <color name="divider">#333333</color>
+    <color name="locked_folder">#EF5350</color>
+</resources>

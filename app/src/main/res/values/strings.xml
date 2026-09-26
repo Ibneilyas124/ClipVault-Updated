@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">ClipVault</string>
+
+    <string name="tab_numbers">Numbers</string>
+    <string name="tab_links">Links</string>
+    <string name="tab_text">Text</string>
+    <string name="tab_adult">Locked</string>
+
+    <string name="developer_credit">Developer: Sarfraz Qureshi</string>
+
+    <!-- Edit these with your real details -->
+    <string name="dev_name">Sarfraz Qureshi</string>
+    <string name="dev_whatsapp">+92-3XX-XXXXXXX</string>
+    <string name="dev_email">yourname@example.com</string>
+    <string name="dev_skills">Android Development, Embedded Systems, Electronics Repair</string>
+    <string name="dev_passion">Building simple, useful tools that solve everyday problems</string>
+
+    <string name="empty_list">Koi item save nahi hai</string>
+    <string name="set_pin_title">Naya PIN set karen</string>
+    <string name="enter_pin_title">PIN dakhil karen</string>
+    <string name="pin_hint">4 to 6 digit PIN</string>
+    <string name="pin_mismatch">PIN match nahi hua, dobara koshish karen</string>
+
+    <string name="accessibility_service_desc">ClipVault ko copy ki hui text/links/numbers background mein automatically save karne ke liye is permission ki zaroorat hai.</string>
+</resources>
