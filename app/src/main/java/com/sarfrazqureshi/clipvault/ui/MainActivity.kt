@@ -111,13 +111,13 @@ class MainActivity : AppCompatActivity() {
             AlertDialog.Builder(this)
                 .setTitle("Ek aur permission chahiye")
                 .setMessage("Floating bubble dikhane ke liye 'Display over other apps' ON karen.")
-                .setPositiveButton("Settings kholen") { _, _ ->
-                    val intent = Intent(
-                        android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        android.net.Uri.parse("package:$packageName")
-                    )
-                    startActivity(intent)
-                }
+                .setPositiveButton("Settings kholen") { _, _ -> startActivity(Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION, android.net.Uri.parse("package:" + packageName))) }
+                .setNegativeButton("Baad mein", null)
+                .show()
+        } else {
+            startService(Intent(this, com.sarfrazqureshi.clipvault.service.BubbleService::class.java))
+        }
+    }
                 .setNegativeButton("Baad mein", null)
                 .show()
         } else {
