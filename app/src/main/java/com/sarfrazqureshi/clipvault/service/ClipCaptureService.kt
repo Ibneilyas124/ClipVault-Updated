@@ -36,6 +36,7 @@ class ClipCaptureService : AccessibilityService() {
         info.notificationTimeout = 100
         info.packageNames = null // listen across every app, not just ClipVault
         serviceInfo = info
+        android.widget.Toast.makeText(applicationContext, "ClipVault service started", android.widget.Toast.LENGTH_SHORT).show()
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -54,6 +55,7 @@ class ClipCaptureService : AccessibilityService() {
     }
 
     private fun saveClip(text: String) {
+        android.widget.Toast.makeText(applicationContext, "Captured: ${text.take(15)}", android.widget.Toast.LENGTH_SHORT).show()
         val type = ClipClassifier.classify(text)
         scope.launch {
             val dao = ClipDatabase.getInstance(applicationContext).clipDao()
