@@ -80,15 +80,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun promptAccessibilityIfNeeded() {
-        // Clipboard capture only works once the user turns this on manually —
-        // Android does not allow apps to enable it themselves.
-        AlertDialog.Builder(this)
-            .setTitle("Permission zaroori hai")
-            .setMessage("Copy ki hui cheezein automatically save karne ke liye, ClipVault ko Accessibility Settings mein ON karen.")
-            .setPositiveButton("Settings kholen") { _, _ ->
-                startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-            }
-            .setNegativeButton("Baad mein", null)
-            .show()
-    }
+    if (isAccessibilityServiceEnabled()) return
+
+    AlertDialog.Builder(this)
+        .setTitle("Permission zaroori hai")
+        .setMessage("Copy ki hui cheezein automatically save karne ke liye, ClipVault ko Accessibility Settings mein ON karen.")
+        .setPositiveButton("Settings kholen") { _, _ ->
+            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+        }
+        .setNegativeButton("Baad mein", null)
+        .show()
+}
+
+private fun isAccessibilityServiceEnabled(): Boolean {
+    val expectedComponent = "$packageName/${com.sarfrazqureshi.clipvault.service.ClipCaptureService::class.java.canonicalName}"
+    val enabledServices = Settings.Secure.getString(
+        contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+    ) ?: return false
+    return enabledServices.split(":").any { it.equals(expectedComponent, ignoreCase = true) }
+}
 }
