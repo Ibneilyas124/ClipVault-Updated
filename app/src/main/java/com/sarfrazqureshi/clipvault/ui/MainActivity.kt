@@ -3,7 +3,6 @@ package com.sarfrazqureshi.clipvault.ui
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
-import android.text.method.LinkMovementMethod
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -39,7 +38,7 @@ class MainActivity : AppCompatActivity() {
             override fun getItemCount() = tabTypes.size
             override fun createFragment(position: Int) = ClipListFragment.newInstance(tabTypes[position])
         }
-        binding.viewPager.isUserInputEnabled = false // force tab-bar navigation so we can guard the locked tab
+        binding.viewPager.isUserInputEnabled = false
 
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             tab.setText(tabTitles[position])
@@ -60,6 +59,14 @@ class MainActivity : AppCompatActivity() {
         binding.developerCredit.setOnClickListener { showDeveloperDialog() }
 
         promptAccessibilityIfNeeded()
+        checkOverlayPermission()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (android.provider.Settings.canDrawOverlays(this)) {
+            startService(Intent(this, com.sarfrazqureshi.clipvault.service.BubbleService::class.java))
+        }
     }
 
     private fun showDeveloperDialog() {
@@ -69,7 +76,6 @@ class MainActivity : AppCompatActivity() {
         dialogBinding.devEmail.text = getString(R.string.dev_email)
         dialogBinding.devSkills.text = getString(R.string.dev_skills)
         dialogBinding.devPassion.text = getString(R.string.dev_passion)
-        // Plain informational text only — not clickable/interactive.
         dialogBinding.devWhatsapp.movementMethod = null
         dialogBinding.devEmail.movementMethod = null
 
@@ -80,23 +86,39 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun promptAccessibilityIfNeeded() {
-    if (isAccessibilityServiceEnabled()) return
+        if (isAccessibilityServiceEnabled()) return
 
-    AlertDialog.Builder(this)
-        .setTitle("Permission zaroori hai")
-        .setMessage("Copy ki hui cheezein automatically save karne ke liye, ClipVault ko Accessibility Settings mein ON karen.")
-        .setPositiveButton("Settings kholen") { _, _ ->
-            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-        }
-        .setNegativeButton("Baad mein", null)
-        .show()
-}
+        AlertDialog.Builder(this)
+            .setTitle("Permission zaroori hai")
+            .setMessage("Copy ki hui cheezein automatically save karne ke liye, ClipVault ko Accessibility Settings mein ON karen.")
+            .setPositiveButton("Settings kholen") { _, _ ->
+                startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+            }
+            .setNegativeButton("Baad mein", null)
+            .show()
+    }
 
-private fun isAccessibilityServiceEnabled(): Boolean {
-    val expectedComponent = "$packageName/${com.sarfrazqureshi.clipvault.service.ClipCaptureService::class.java.canonicalName}"
-    val enabledServices = Settings.Secure.getString(
-        contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-    ) ?: return false
-    return enabledServices.split(":").any { it.equals(expectedComponent, ignoreCase = true) }
-}
-}
+    private fun isAccessibilityServiceEnabled(): Boolean {
+        val expectedComponent = "$packageName/${com.sarfrazqureshi.clipvault.service.ClipCaptureService::class.java.canonicalName}"
+        val enabledServices = Settings.Secure.getString(
+            contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ) ?: return false
+        return enabledServices.split(":").any { it.equals(expectedComponent, ignoreCase = true) }
+    }
+
+    private fun checkOverlayPermission() {
+        if (!android.provider.Settings.canDrawOverlays(this)) {
+            AlertDialog.Builder(this)
+                .setTitle("Ek aur permission chahiye")
+                .setMessage("Floating bubble dikhane ke liye 'Display over other apps' ON karen.")
+                .setPositiveButton("Settings kholen") { _, _ ->
+                    val intent = Intent(
+                        android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        android.net.Uri.parse("package:$packageName")
+                    )
+                    startActivity(intent)
+                }
+                .setNegativeButton("Baad mein", null)
+                .show()
+        } else {
+            startService(Intent(this, com.sarfrazqureshi.clipv
