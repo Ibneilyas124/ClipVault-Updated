@@ -8,11 +8,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.sarfrazqureshi.clipvault.databinding.FragmentClipListBinding
+import com.sarfrazqureshi.clipvault.db.ClipDatabase
 import com.sarfrazqureshi.clipvault.db.ClipType
+import kotlinx.coroutines.launch
 
 class ClipListFragment : Fragment() {
 
@@ -37,12 +41,25 @@ class ClipListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val adapter = ClipAdapter { item ->
-            // Tap an item to copy it back to clipboard for quick reuse.
-            val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            cm.setPrimaryClip(ClipData.newPlainText("clipvault", item.content))
-            Toast.makeText(requireContext(), "Copied", Toast.LENGTH_SHORT).show()
-        }
+        val adapter = ClipAdapter(
+            onClick = { item ->
+                val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                cm.setPrimaryClip(ClipData.newPlainText("clipvault", item.content))
+                Toast.makeText(requireContext(), "Copied", Toast.LENGTH_SHORT).show()
+            },
+            onLongClick = { item ->
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Delete karen?")
+                    .setMessage(item.content.take(80))
+                    .setPositiveButton("Delete") { _, _ ->
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            ClipDatabase.getInstance(requireContext()).clipDao().delete(item.id)
+                        }
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
+        )
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
 
