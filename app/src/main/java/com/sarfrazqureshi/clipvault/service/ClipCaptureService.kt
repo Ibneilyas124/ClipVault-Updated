@@ -21,24 +21,23 @@ class ClipCaptureService : AccessibilityService() {
     private var lastSaved: String? = null
     private val scope = CoroutineScope(Dispatchers.IO)
 
+    private val listener = ClipboardManager.OnPrimaryClipChangedListener {
+        checkClipboard()
+    }
+
     override fun onServiceConnected() {
         super.onServiceConnected()
         clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboardManager.addPrimaryClipChangedListener(listener)
 
-        // Explicitly listen for window/content change events — this keeps the
-        // service "active" so the OS allows clipboard reads from here.
         val info = AccessibilityServiceInfo()
-        info.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
-                AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED or
-                AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED
+        info.eventTypes = AccessibilityEvent.TYPES_ALL_MASK
         info.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
         info.notificationTimeout = 100
+        info.packageNames = null // listen across every app, not just ClipVault
         serviceInfo = info
-
-        showToast("ClipVault service active")
     }
 
-    // Checked on every relevant accessibility event, not just via a passive listener.
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         checkClipboard()
     }
@@ -55,7 +54,6 @@ class ClipCaptureService : AccessibilityService() {
     }
 
     private fun saveClip(text: String) {
-        showToast("Saved: ${text.take(20)}")
         val type = ClipClassifier.classify(text)
         scope.launch {
             val dao = ClipDatabase.getInstance(applicationContext).clipDao()
@@ -63,11 +61,12 @@ class ClipCaptureService : AccessibilityService() {
         }
     }
 
-    private fun showToast(msg: String) {
-        Handler(Looper.getMainLooper()).post {
-            Toast.makeText(applicationContext, msg, Toast.LENGTH_SHORT).show()
+    override fun onInterrupt() {}
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (::clipboardManager.isInitialized) {
+            clipboardManager.removePrimaryClipChangedListener(listener)
         }
     }
-
-    override fun onInterrupt() {}
 }
