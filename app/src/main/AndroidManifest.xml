@@ -39,6 +39,15 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility_service_config" />
         </service>
+<service
+            android:name=".service.BubbleService"
+            android:exported="false" />
 
+        <activity
+            android:name=".ui.CaptureActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ClipVault.Transparent"
+            android:excludeFromRecents="true"
+            android:noHistory="true" />
     </application>
 </manifest>
