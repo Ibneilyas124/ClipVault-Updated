@@ -12,5 +12,6 @@ data class ClipItem(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val content: String,
     val type: ClipType,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val isPinned: Boolean = false
 )
