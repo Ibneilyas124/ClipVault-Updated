@@ -12,8 +12,18 @@ import com.sarfrazqureshi.clipvault.util.ClipClassifier
 import kotlinx.coroutines.launch
 
 class CaptureActivity : AppCompatActivity() {
+
+    private var handled = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (!hasFocus || handled) return
+        handled = true
+
         val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = cm.primaryClip
         val text = if (clip != null && clip.itemCount > 0)
