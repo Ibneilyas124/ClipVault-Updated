@@ -60,6 +60,9 @@ class MainActivity : AppCompatActivity() {
         })
 
         binding.developerCredit.setOnClickListener { showDeveloperDialog() }
+        binding.searchBar.setOnClickListener {
+            startActivity(Intent(this, SearchActivity::class.java))
+        }
 
         promptAccessibilityIfNeeded()
         checkOverlayPermission()
