@@ -1,6 +1,7 @@
 package com.sarfrazqureshi.clipvault.ui
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,6 +13,8 @@ import com.sarfrazqureshi.clipvault.R
 import com.sarfrazqureshi.clipvault.databinding.ActivityMainBinding
 import com.sarfrazqureshi.clipvault.databinding.DialogDeveloperInfoBinding
 import com.sarfrazqureshi.clipvault.db.ClipType
+import com.sarfrazqureshi.clipvault.service.BubbleService
+import com.sarfrazqureshi.clipvault.service.ClipCaptureService
 
 class MainActivity : AppCompatActivity() {
 
@@ -64,8 +67,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (android.provider.Settings.canDrawOverlays(this)) {
-            startService(Intent(this, com.sarfrazqureshi.clipvault.service.BubbleService::class.java))
+        if (Settings.canDrawOverlays(this)) {
+            startService(Intent(this, BubbleService::class.java))
         }
     }
 
@@ -99,7 +102,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isAccessibilityServiceEnabled(): Boolean {
-        val expectedComponent = "$packageName/${com.sarfrazqureshi.clipvault.service.ClipCaptureService::class.java.canonicalName}"
+        val expectedComponent = packageName + "/" + ClipCaptureService::class.java.canonicalName
         val enabledServices = Settings.Secure.getString(
             contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
         ) ?: return false
@@ -107,18 +110,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkOverlayPermission() {
-        if (!android.provider.Settings.canDrawOverlays(this)) {
+        if (!Settings.canDrawOverlays(this)) {
             AlertDialog.Builder(this)
                 .setTitle("Ek aur permission chahiye")
                 .setMessage("Floating bubble dikhane ke liye 'Display over other apps' ON karen.")
-                .setPositiveButton("Settings kholen") { _, _ -> startActivity(Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION, android.net.Uri.parse("package:" + packageName))) }
+                .setPositiveButton("Settings kholen") { _, _ ->
+                    startActivity(
+                        Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + packageName))
+                    )
+                }
                 .setNegativeButton("Baad mein", null)
                 .show()
         } else {
-            startService(Intent(this, com.sarfrazqureshi.clipvault.service.BubbleService::class.java))
+            startService(Intent(this, BubbleService::class.java))
         }
     }
-                .setNegativeButton("Baad mein", null)
-                .show()
-        } else {
-            startService(Intent(this, com.sarfrazqureshi.clipv
+}
