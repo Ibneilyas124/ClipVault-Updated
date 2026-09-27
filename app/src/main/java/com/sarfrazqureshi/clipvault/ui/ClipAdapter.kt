@@ -31,7 +31,7 @@ class ClipAdapter(
 
     override fun onBindViewHolder(holder: ClipViewHolder, position: Int) {
         val item = items[position]
-        holder.binding.textContent.text = item.content
+        holder.binding.textContent.text = if (item.isPinned) "\uD83D\uDCCC " + item.content else item.content
         holder.binding.textTimestamp.text = dateFormat.format(Date(item.timestamp))
         holder.itemView.setOnClickListener { onClick(item) }
         holder.itemView.setOnLongClickListener {
