@@ -15,7 +15,7 @@ class Converters {
     fun toType(value: String): ClipType = ClipType.valueOf(value)
 }
 
-@Database(entities = [ClipItem::class], version = 1, exportSchema = false)
+@Database(entities = [ClipItem::class], version = 2, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class ClipDatabase : RoomDatabase() {
     abstract fun clipDao(): ClipDao
@@ -29,7 +29,9 @@ abstract class ClipDatabase : RoomDatabase() {
                     context.applicationContext,
                     ClipDatabase::class.java,
                     "clipvault.db"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }
