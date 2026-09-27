@@ -1,23 +1,21 @@
 package com.sarfrazqureshi.clipvault.ui
 
+import android.app.Activity
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
 import com.sarfrazqureshi.clipvault.db.ClipDatabase
 import com.sarfrazqureshi.clipvault.db.ClipItem
 import com.sarfrazqureshi.clipvault.util.ClipClassifier
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class CaptureActivity : AppCompatActivity() {
+class CaptureActivity : Activity() {
 
     private var handled = false
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
+    private val scope = CoroutineScope(Dispatchers.IO)
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
@@ -31,7 +29,7 @@ class CaptureActivity : AppCompatActivity() {
 
         if (!text.isNullOrEmpty()) {
             val type = ClipClassifier.classify(text)
-            lifecycleScope.launch {
+            scope.launch {
                 ClipDatabase.getInstance(applicationContext).clipDao()
                     .insert(ClipItem(content = text, type = type))
             }
