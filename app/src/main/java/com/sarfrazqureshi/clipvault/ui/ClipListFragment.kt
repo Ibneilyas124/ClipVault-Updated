@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
@@ -15,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.sarfrazqureshi.clipvault.databinding.FragmentClipListBinding
 import com.sarfrazqureshi.clipvault.db.ClipDatabase
+import com.sarfrazqureshi.clipvault.db.ClipItem
 import com.sarfrazqureshi.clipvault.db.ClipType
 import kotlinx.coroutines.launch
 
@@ -41,24 +43,24 @@ class ClipListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        if (type == ClipType.ADULT) {
+            binding.changePinText.visibility = View.VISIBLE
+            binding.changePinText.setOnClickListener {
+                val intent = android.content.Intent(requireContext(), PinActivity::class.java)
+                intent.putExtra("mode", "change")
+                startActivity(intent)
+            }
+        } else {
+            binding.changePinText.visibility = View.GONE
+        }
+
         val adapter = ClipAdapter(
             onClick = { item ->
                 val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 cm.setPrimaryClip(ClipData.newPlainText("clipvault", item.content))
                 Toast.makeText(requireContext(), "Copied", Toast.LENGTH_SHORT).show()
             },
-            onLongClick = { item ->
-                AlertDialog.Builder(requireContext())
-                    .setTitle("Delete karen?")
-                    .setMessage(item.content.take(80))
-                    .setPositiveButton("Delete") { _, _ ->
-                        viewLifecycleOwner.lifecycleScope.launch {
-                            ClipDatabase.getInstance(requireContext()).clipDao().delete(item.id)
-                        }
-                    }
-                    .setNegativeButton("Cancel", null)
-                    .show()
-            }
+            onLongClick = { item -> showItemOptions(item) }
         )
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
@@ -72,6 +74,56 @@ class ClipListFragment : Fragment() {
             adapter.submitList(list)
             binding.emptyText.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
         }
+    }
+
+    private fun showItemOptions(item: ClipItem) {
+        val options = arrayOf(if (item.isPinned) "Unpin" else "Pin", "Edit", "Delete")
+        AlertDialog.Builder(requireContext())
+            .setTitle(item.content.take(50))
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> viewLifecycleOwner.lifecycleScope.launch {
+                        ClipDatabase.getInstance(requireContext()).clipDao()
+                            .updatePinned(item.id, !item.isPinned)
+                    }
+                    1 -> showEditDialog(item)
+                    2 -> confirmDelete(item)
+                }
+            }
+            .show()
+    }
+
+    private fun showEditDialog(item: ClipItem) {
+        val editText = EditText(requireContext())
+        editText.setText(item.content)
+        editText.setSelection(editText.text.length)
+        AlertDialog.Builder(requireContext())
+            .setTitle("Edit karen")
+            .setView(editText)
+            .setPositiveButton("Save") { _, _ ->
+                val newText = editText.text.toString().trim()
+                if (newText.isNotEmpty()) {
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        ClipDatabase.getInstance(requireContext()).clipDao()
+                            .updateContent(item.id, newText)
+                    }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun confirmDelete(item: ClipItem) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete karen?")
+            .setMessage(item.content.take(80))
+            .setPositiveButton("Delete") { _, _ ->
+                viewLifecycleOwner.lifecycleScope.launch {
+                    ClipDatabase.getInstance(requireContext()).clipDao().delete(item.id)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     override fun onDestroyView() {
