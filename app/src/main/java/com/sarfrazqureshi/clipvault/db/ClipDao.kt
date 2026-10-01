@@ -12,8 +12,17 @@ interface ClipDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(item: ClipItem)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(items: List<ClipItem>)
+
     @Query("SELECT * FROM clip_items WHERE type = :type ORDER BY isPinned DESC, timestamp DESC")
     fun getByType(type: ClipType): LiveData<List<ClipItem>>
+
+    @Query("SELECT * FROM clip_items")
+    suspend fun getAllOnce(): List<ClipItem>
+
+    @Query("DELETE FROM clip_items")
+    suspend fun clearAll()
 
     @Query("SELECT content FROM clip_items ORDER BY timestamp DESC LIMIT 1")
     suspend fun getLastSavedContent(): String?
